@@ -6,12 +6,12 @@ namespace Ball_Collector
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
-        [Range(1.0f, 5.0f)][SerializeField] private float _moveSpeed = 5.0f;
+        [Range(1, 5)][SerializeField] private float _moveSpeed = 5;
         [SerializeField] private SpriteRenderer _spriteRenderer;
         private Rigidbody2D _rb;
-        private float _minX;
-        private float _maxX;
         private float _horizontalInput;
+        private float _maxX;
+        private float _minX;
 
         private void Awake()
         {
@@ -20,22 +20,12 @@ namespace Ball_Collector
 
         private void Start()
         {
-            Camera mainCam = Camera.main;
+            float objectHalfWidth = _spriteRenderer.bounds.extents.x;
 
-            if (!mainCam.orthographic)
-                Debug.LogError("Camera projection is not set to Orthographic");
+            ScreenBounds screenBounds = new(transform.position.z);
 
-            float _objectHalfWidth = _spriteRenderer.bounds.extents.x;
-            float _objectHalfHeight = _spriteRenderer.bounds.extents.y;
-
-            Vector3 _screenBounds = mainCam.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, transform.position.z));
-
-            transform.position = new Vector3(0, -_screenBounds.y + _objectHalfHeight, 0);
-
-            _minX = -_screenBounds.x + _objectHalfWidth;
-            _maxX = _screenBounds.x - _objectHalfWidth;
-
-            Debug.Log($"Camera Bounds: minX = {_minX}, maxX = {_maxX}");
+            _minX = screenBounds.GetMinHorizontalBound() + objectHalfWidth;
+            _maxX = screenBounds.GetMaxHorizontalBound() - objectHalfWidth;
         }
 
         private void Update()
@@ -45,7 +35,7 @@ namespace Ball_Collector
 
         private void FixedUpdate()
         {
-            Vector3 inputVector = new(_horizontalInput, 0.0f, 0.0f);
+            Vector3 inputVector = new(_horizontalInput, 0, 0);
 
             Vector3 targetPosition = transform.position + _moveSpeed * Time.fixedDeltaTime * inputVector.normalized;
             targetPosition.x = Mathf.Clamp(targetPosition.x, _minX, _maxX);
