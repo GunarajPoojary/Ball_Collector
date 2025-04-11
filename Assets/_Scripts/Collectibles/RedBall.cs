@@ -6,7 +6,9 @@ namespace Ball_Collector
     {
         public void Collect()
         {
-            Debug.Log("Red Ball");
+            Timer.Instance.RemoveSeconds(2);
+            ScoreUI.Instance.RemoveScore(1);
+            BallPool.Instance.ReturnToPool(this);
         }
     }
 }
