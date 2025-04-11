@@ -1,4 +1,5 @@
 using System;
+using Ball_Collector.Utility;
 using UnityEngine;
 
 namespace Ball_Collector
@@ -10,8 +11,8 @@ namespace Ball_Collector
         [SerializeField] private SpriteRenderer _spriteRenderer;
         private Rigidbody2D _rb;
         private float _horizontalInput;
-        private float _maxX;
-        private float _minX;
+        private float _rightBoundary;
+        private float _leftBoundary;
 
         private void Awake()
         {
@@ -22,10 +23,10 @@ namespace Ball_Collector
         {
             float objectHalfWidth = _spriteRenderer.bounds.extents.x;
 
-            ScreenBounds screenBounds = new(transform.position.z);
+            WorldScreenBounds screenBounds = new(transform.position.z);
 
-            _minX = screenBounds.GetMinHorizontalBound() + objectHalfWidth;
-            _maxX = screenBounds.GetMaxHorizontalBound() - objectHalfWidth;
+            _leftBoundary = -screenBounds.GetHorizontalBound() + objectHalfWidth;
+            _rightBoundary = screenBounds.GetHorizontalBound() - objectHalfWidth;
         }
 
         private void Update()
@@ -38,9 +39,17 @@ namespace Ball_Collector
             Vector3 inputVector = new(_horizontalInput, 0, 0);
 
             Vector3 targetPosition = transform.position + _moveSpeed * Time.fixedDeltaTime * inputVector.normalized;
-            targetPosition.x = Mathf.Clamp(targetPosition.x, _minX, _maxX);
+            targetPosition.x = Mathf.Clamp(targetPosition.x, _leftBoundary, _rightBoundary);
 
             _rb.MovePosition(targetPosition);
+        }
+
+        private void OnTriggerEnter2D(Collider2D col)
+        {
+            if (col.TryGetComponent(out ICollectible collectible))
+            {
+                collectible.Collect();
+            }
         }
     }
 }
